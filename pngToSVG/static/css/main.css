@@ -1,0 +1,11 @@
+#svgContainer {
+    margin-top: 20px;
+    border: 1px solid #ccc;
+    width: 400px;
+    height: 400px;
+  }
+  svg {
+    width: 100%;
+    height: 100%;
+    background: #f9f9f9;
+  }

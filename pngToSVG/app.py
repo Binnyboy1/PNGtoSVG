@@ -5,8 +5,12 @@ app = Flask(__name__)
 
 # Routes
 @app.route('/')
-def index():
-    return render_template('dragDrop.html')  # This will render the 'index.html' file in the 'templates' folder
+def main():
+    return render_template('main.html')
+
+@app.route('/dragDrop')
+def dragDrop():
+    return render_template('dragDrop.html')
 
 # @app.route('/about')
 # def about():
