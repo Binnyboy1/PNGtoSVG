@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Drag-and-Drop Upload with Big Block Handling, Local Storage, and Categories</title>
+  <link rel="stylesheet" href="../static/css/dragDrop.css" />
+</head>
+<body>
+  <div id="upload-zone" role="presentation" tabindex="0">
+    <p class="placeholder" id="placeholder-text">
+      Drag and drop files here or click to upload
+    </p>
+    <canvas id="preview-canvas"></canvas>
+  </div>
+  <input id="file-input" type="file" accept="image/*,.png,.jpg,.jpeg" multiple />
+  <script src="../static/js/dragDrop.js"></script>
+</body>
+</html>
