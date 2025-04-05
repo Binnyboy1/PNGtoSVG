@@ -1,11 +1,3 @@
-// --- Local Storage Functions for legend mapping and categories ---
-function loadCategories() {
-  let savedCats = localStorage.getItem("legendCategories");
-  if (savedCats) {
-    legendCategories = JSON.parse(savedCats);
-  }
-}
-
 /********* DOM & CANVAS SETUP *********/
 const uploadZone = document.getElementById('upload-zone');
 const fileInput = document.getElementById('file-input');
@@ -71,12 +63,5 @@ function drawImageOnCanvas(img) {
   canvas.style.width = "auto";
   canvas.style.height = "100%";
 
-  // Load categories from local storage if available.
-  loadCategories();
-
-  if (globalRatio.some(ratio => Math.abs((img.width / img.height) - ratio) < 0.01)) {
-    processGridAndRecreateImage(img);
-  } else {
-    console.log("Invalid Image aspect ratio; skipping grid processing.");
-  }
+  processGridAndRecreateImage(img);
 }

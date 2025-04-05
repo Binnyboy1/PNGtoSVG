@@ -7,11 +7,27 @@
   <link rel="stylesheet" href="../static/css/main.css" />
 </head>
 <body>
-  <h2>SVG Path Visualizer</h2>
-  <textarea id="pathInput" rows="4" cols="60" placeholder="Enter SVG path data here..."></textarea><br>
-  <button onclick="drawPath()">Render SVG</button>
-  <button onclick="insertSvg()">Insert SVG</button>
 
+  <div class="container">
+    <div id="divC1">
+        <div id="upload-zone" role="presentation" tabindex="0">
+          <p class="placeholder" id="placeholder-text">
+            Drag and drop files here or click to upload
+          </p>
+          <canvas id="preview-canvas"></canvas>
+        </div>
+        <input id="file-input" type="file" accept="image/*,.png,.jpg,.jpeg" multiple />
+        
+        <div id="divC1R2"></div>
+        <div id="divC1R3"></div>
+        <div id="divC1R4"></div>
+        <textarea id="pathInput" rows="4" cols="60" placeholder="Enter SVG path data here..."></textarea>
+    </div>
+    <div id="divC2"></div>
+  </div>
+
+
+  
   <div id="svgContainer">
     <svg id="svgOutput" viewBox="0 0 400 400">
       <!-- Path will go here -->
