@@ -37,7 +37,37 @@ function drawPath() {
 
 function insertSvg() {
   const svgParent = document.getElementById('svgContainer');
+
+  // Obtain png
+  // const storedImg = document.getElementById('imgContainer');
+  // const png = storedImg.querySelector("img");
+  // const imageSrc = png.src;
+  // console.log(imageSrc);
+  const storedImg = document.getElementById('preview-canvas');
+  const png = storedImg.toDataURL('image/png');
+  console.log(png);
+
+  const formData = new FormData();
+  formData.append('imagePath', png);
+
+  // Prepare data to send in the request body
+  // const formData = new FormData();
+  // formData.append('param1', 'heart.png');
+  // formData.append('param2', 'heart.svg');
   
   // Add fetch quest to grab Svg data that will be displayed
+  // Send the POST request using fetch
+  fetch('/pngToSvg', {
+    method: 'POST',
+    body: formData,
+  })
+  .then(response => response.json())  // Assuming the server returns a JSON response
+  .then(data => {
+    console.log('Success:', data);  // Handle the response data
+  })
+  .catch((error) => {
+    console.error('Error:', error);  // Handle any errors
+  });
+
   svgParent.innerHTML = `${data}`;
 }

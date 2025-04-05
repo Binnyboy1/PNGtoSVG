@@ -21,15 +21,17 @@ def dragDrop():
 def execute():
     if request.method == 'POST':
         # Capture the two string parameters from the form
-        pngName = request.form['param1']
-        svgName = request.form['param2']
+        imagePath = request.form['imagePath']
+        # pngName = request.form['param1']
+        # svgName = request.form['param2']
 
-        pngToSvg(pngName, svgName)  
+        return pngToSvg(imagePath)
+        # return pngToSvg(pngName, svgName)  
         # return render_template('index.html', message="Image processed successfully!")
 
-def pngToSvg(pngName, svgName):
+def pngToSvg(imagePath):
     # Load an image.
-    image = np.asarray(Image.open(f"{pngName}.png").convert("RGB"))
+    image = np.asarray(Image.open(imagePath).convert("RGB"))
 
     # Create a bitmap.
     bitmap = Bitmap(image)
@@ -38,7 +40,8 @@ def pngToSvg(pngName, svgName):
     vector = bitmap.trace()
 
     # Save the vector as an SVG.
-    vector.save(f"{svgName}.svg")
+    # Change later to specify svg path name
+    vector.save("temp.svg")
 
     # # Get an SVG as a byte string.
     svg = vector.encode(VectorFormat.SVG)
@@ -46,6 +49,26 @@ def pngToSvg(pngName, svgName):
     # print(svg.decode('utf-8'))
 
     return svg.decode('utf-8')
+
+# def pngToSvg(pngName, svgName):
+#     # Load an image.
+#     image = np.asarray(Image.open("{}.png".format(pngName)).convert("RGB"))
+# 
+#     # Create a bitmap.
+#     bitmap = Bitmap(image)
+# 
+#     # Trace the bitmap.
+#     vector = bitmap.trace()
+# 
+#     # Save the vector as an SVG.
+#     vector.save("{}.svg".format(svgName))
+# 
+#     # # Get an SVG as a byte string.
+#     svg = vector.encode(VectorFormat.SVG)
+# 
+#     # print(svg.decode('utf-8'))
+# 
+#     return svg.decode('utf-8')
 
 # Run the app
 if __name__ == '__main__':
