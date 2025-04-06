@@ -226,7 +226,9 @@ function upscalePNG() {
     .then(response => response.json()) // Parse the JSON response from the server
     .then(data => {
       // TODO: Change this with what you want it to do later
-      console.log('Success:', data["svg_info"]);
+      // console.log('Success:', data["svg_info"]);
+      const pngContainer = document.getElementById('divC1R2');
+      pngContainer.innerHTML = "<img src='../static/images/upscaled_image.png' />"
     })
     .catch(error => {
       console.error('Error:', error);

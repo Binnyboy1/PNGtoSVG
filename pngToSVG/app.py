@@ -6,6 +6,7 @@ import string
 import random
 import requests
 import time
+import os
 from flask import Flask, render_template, request, jsonify
 from autotrace import Bitmap, VectorFormat
 from PIL import Image
@@ -45,9 +46,14 @@ def upscale():
     result = pngUpscale(data['pngData'])
     
     # You can process the data here and return a response
-    return jsonify({"message": "PNG Upscaled successfully", "upscaled_link": result})
+    return jsonify({"message": "PNG Upscaled successfully", "upscaled_path": result})
 
 def pngUpscale(data):
+    # Save the image locally as a PNG file
+    static_folder = os.path.join(app.root_path, 'static', 'images')
+    # Ensure the directory exists
+    os.makedirs(static_folder, exist_ok=True)
+
     # Generate a random 32-digit hexadecimal string
     hex_string = ''.join(random.choices(string.hexdigits.lower(), k=32))
 
@@ -63,10 +69,14 @@ def pngUpscale(data):
     pil_image = Image.fromarray(image)
 
     # Save the image as PNG locally
-    pil_image.save("saved_image.png", "PNG")
+    # pil_image.save("/static/images/saved_image.png", "PNG")
+    # Define the full path to save the image
+    image_path = os.path.join(static_folder, 'saved_image.png')
+    # Save the image
+    pil_image.save(image_path, 'PNG')
     
     # TODO: Unsure if this method of uploading image object works
-    upload_image("saved_image.png", hex_string, 
+    upload_image(image_path, hex_string, 
             use_face_enhance=False,
 			scale = 2)
 
@@ -86,10 +96,16 @@ def pngUpscale(data):
     # TODO: Does this work?
     if response.status_code == 200:
         image = Image.open(BytesIO(response.content))
-        # Save the image locally as a PNG file
-        image.save("upscaled_image.png", "PNG")
+        
+        # Define the full path to save the image
+        image_path = os.path.join(static_folder, 'upscaled_image.png')
+        # Save the image
+        image.save(image_path, 'PNG')
+        # image.save("/static/images/upscaled_image.png", "PNG")
+
         print("Image upscaled and downloaded as a png")
-        return completed[0]
+        # return completed[0]
+        return image_path
     else:
         return None
 
