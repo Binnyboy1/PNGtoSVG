@@ -63,5 +63,5 @@ function drawImageOnCanvas(img) {
   canvas.style.width = "auto";
   canvas.style.height = "100%";
 
-  processGridAndRecreateImage(img);
+  // processGridAndRecreateImage(img);
 }

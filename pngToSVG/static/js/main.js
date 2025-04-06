@@ -39,50 +39,28 @@ function drawPath() {
 document.getElementById('pathInput').addEventListener('input', drawPath);
 
 
-
-
-
+// Clean version of insertSvg()
 function insertSvg() {
-  const svgParent = document.getElementById('svgContainer');
-
-  // Obtain png
-  // const storedImg = document.getElementById('imgContainer');
-  // const png = storedImg.querySelector("img");
-  // const imageSrc = png.src;
-  // console.log(imageSrc);
+  // PNG URL
   const storedImg = document.getElementById('preview-canvas');
-  const png = storedImg.toDataURL('image/png');
-  console.log(png);
+  const pngData = storedImg.toDataURL('image/png');
+  const pngData_json = { pngData };
 
-  const formData = new FormData();
-  formData.append('imagePath', png);
-
-  // Prepare data to send in the request body
-  // const formData = new FormData();
-  // formData.append('param1', 'heart.png');
-  // formData.append('param2', 'heart.svg');
-  
-  // Add fetch quest to grab Svg data that will be displayed
-  // Send the POST request using fetch
   fetch('/pngToSvg', {
-    method: 'POST',
-    body: formData,
+      method: 'POST', // Use POST method
+      headers: {
+          'Content-Type': 'application/json', // The server expects JSON
+      },
+      body: JSON.stringify(pngData_json), // Send the pngData_json in the request body as JSON
   })
-  .then(response => response.json())  // Assuming the server returns a JSON response
-  .then(data => {
-    console.log('Success:', data);  // Handle the response data
-  })
-  .catch((error) => {
-    console.error('Error:', error);  // Handle any errors
-  });
-
-  svgParent.innerHTML = `${data}`;
+    .then(response => response.json()) // Parse the JSON response from the server
+    .then(data => {
+      console.log('Success:', data);
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
 }
-
-
-
-
-
 
 
 
@@ -151,5 +129,5 @@ function drawImageOnCanvas(img) {
   canvas.style.width = "auto";
   canvas.style.height = "100%";
 
-  processGridAndRecreateImage(img);
+  insertSvg();
 }

@@ -1,8 +1,11 @@
-from flask import Flask, render_template, request
 import numpy as np
+import matplotlib.pyplot as plt
+import base64
+import urllib.request
+from flask import Flask, render_template, request, jsonify
 from autotrace import Bitmap, VectorFormat
 from PIL import Image
-import matplotlib.pyplot as plt
+from io import BytesIO
 
 # Create a Flask app instance
 app = Flask(__name__)
@@ -16,22 +19,27 @@ def main():
 def dragDrop():
     return render_template('dragDrop.html')
 
-# Work in progress. Check whether passing parameters works. What to return??
-@app.route('/pngToSvg', methods=['POST'])
+@app.route('/pngToSvg', methods=['POST'])  # Change to POST method
 def execute():
-    if request.method == 'POST':
-        # Capture the two string parameters from the form
-        imagePath = request.form['imagePath']
-        # pngName = request.form['param1']
-        # svgName = request.form['param2']
+    data = request.get_json()  # Get the JSON data from the body of the request
 
-        return pngToSvg(imagePath)
-        # return pngToSvg(pngName, svgName)  
-        # return render_template('index.html', message="Image processed successfully!")
+    # print(data['pngData'])  # Print the data to see the received input
 
-def pngToSvg(imagePath):
-    # Load an image.
-    image = np.asarray(Image.open(imagePath).convert("RGB"))
+    pngToSvg(data['pngData'])
+    
+    # You can process the data here and return a response
+    return jsonify({"message": "SVG obtained successfully", "svg_info": data})
+
+def pngToSvg(data):
+    image_data = data.split(",")[1]  # This gets only the base64 part
+
+    # print(image_data)
+
+    # Decode the base64 string
+    image_bytes = base64.b64decode(image_data)
+
+    # Convert the byte data to an image
+    image = np.asarray(Image.open(BytesIO(image_bytes)).convert("RGB"))
 
     # Create a bitmap.
     bitmap = Bitmap(image)
@@ -39,39 +47,19 @@ def pngToSvg(imagePath):
     # Trace the bitmap.
     vector = bitmap.trace()
 
-    # Save the vector as an SVG.
-    # Change later to specify svg path name
-    vector.save("temp.svg")
+    # vector.save("temp.svg")
 
-    # # Get an SVG as a byte string.
+    # Get an SVG as a byte string.
     svg = vector.encode(VectorFormat.SVG)
+
+    # print(svg)
 
     # print(svg.decode('utf-8'))
 
     return svg.decode('utf-8')
 
-# def pngToSvg(pngName, svgName):
-#     # Load an image.
-#     image = np.asarray(Image.open("{}.png".format(pngName)).convert("RGB"))
-# 
-#     # Create a bitmap.
-#     bitmap = Bitmap(image)
-# 
-#     # Trace the bitmap.
-#     vector = bitmap.trace()
-# 
-#     # Save the vector as an SVG.
-#     vector.save("{}.svg".format(svgName))
-# 
-#     # # Get an SVG as a byte string.
-#     svg = vector.encode(VectorFormat.SVG)
-# 
-#     # print(svg.decode('utf-8'))
-# 
-#     return svg.decode('utf-8')
-
 # Run the app
 if __name__ == '__main__':
-    # app.run(debug=True)
-    app.run(debug=False)
+    app.run(debug=True)
+    # app.run(debug=False)
 
