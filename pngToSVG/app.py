@@ -25,10 +25,10 @@ def execute():
 
     # print(data['pngData'])  # Print the data to see the received input
 
-    pngToSvg(data['pngData'])
+    result = pngToSvg(data['pngData'])
     
     # You can process the data here and return a response
-    return jsonify({"message": "SVG obtained successfully", "svg_info": data})
+    return jsonify({"message": "SVG obtained successfully", "svg_info": result})
 
 def pngToSvg(data):
     image_data = data.split(",")[1]  # This gets only the base64 part
