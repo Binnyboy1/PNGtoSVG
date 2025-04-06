@@ -34,6 +34,18 @@ fileInput.addEventListener('change', (e) => {
   handleFiles(e.target.files);
 });
 
+/********* DRAW ORIGINAL IMAGE *********/
+function drawImageOnCanvas(img) {
+  canvas.width = img.width;
+  canvas.height = img.height;
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(img, 0, 0, img.width, img.height);
+  canvas.style.width = "auto";
+  canvas.style.height = "100%";
+
+  insertSvg();
+}
+
 /********* FILE HANDLING *********/
 function handleFiles(files) {
   if (files.length > 0) {
@@ -52,16 +64,4 @@ function handleFiles(files) {
       }
     });
   }
-}
-
-/********* DRAW ORIGINAL IMAGE *********/
-function drawImageOnCanvas(img) {
-  canvas.width = img.width;
-  canvas.height = img.height;
-  ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(img, 0, 0, img.width, img.height);
-  canvas.style.width = "auto";
-  canvas.style.height = "100%";
-
-  // processGridAndRecreateImage(img);
 }

@@ -10,29 +10,29 @@
 
   <div class="container">
     <div id="divC1">
-        <div id="upload-zone" role="presentation" tabindex="0">
-          <p class="placeholder" id="placeholder-text">
-            Drag and drop files here or click to upload
-          </p>
-          <canvas id="preview-canvas"></canvas>
-        </div>
-        <input id="file-input" type="file" accept="image/*,.png,.jpg,.jpeg" multiple />
-        
-        <div id="divC1R2"></div>
-        <div id="divC1R3"></div>
-        <div id="divC1R4"></div>
-        <textarea id="pathInput" rows="4" cols="60" placeholder="Enter SVG path data here..."></textarea>
+      <div id="upload-zone" role="presentation" tabindex="0">
+        <p class="placeholder" id="placeholder-text">
+          Drag and drop files here or click to upload
+        </p>
+        <canvas id="preview-canvas"></canvas>
+      </div>
+      <input id="file-input" type="file" accept="image/*,.png,.jpg,.jpeg" multiple />
+      
+      <div id="divC1R2"></div>
+      
+      <div id="divC1R3">
+        <textarea class="scroll-wrap" id="pathInput" rows="4" cols="60" placeholder="Enter SVG path data here..."></textarea>
+      </div>
     </div>
-    <div id="divC2"></div>
+    <div id="divC2">
+      <div id="svgContainer">
+          <svg id="svgOutput" viewBox="0 0 400 400">
+            <!-- Path will go here -->
+          </svg>
+        </div>
+    </div>
   </div>
 
-
-  
-  <div id="svgContainer">
-    <svg id="svgOutput" viewBox="0 0 400 400">
-      <!-- Path will go here -->
-    </svg>
-  </div>
 
   <script src="../static/js/main.js"></script>
 </body>
