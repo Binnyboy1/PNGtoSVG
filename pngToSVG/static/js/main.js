@@ -184,7 +184,6 @@ textarea.addEventListener('input', () => {
 
 
 
-// Clean version of insertSvg()
 function insertSvg() {
   // PNG URL
   const storedImg = document.getElementById('preview-canvas');
@@ -204,6 +203,31 @@ function insertSvg() {
       // overwrite
       svgContainer.innerHTML = data["svg_info"];
     //   console.log('Success:', data["svg_info"]);
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
+}
+
+
+function upscalePNG() {
+  // PNG URL
+  // TODO: Potentially change storedImg where it is getting the element
+  const storedImg = document.getElementById('preview-canvas');
+  const pngData = storedImg.toDataURL('image/png');
+  const pngData_json = { pngData };
+
+  fetch('/pngUpscale', {
+      method: 'POST', // Use POST method
+      headers: {
+          'Content-Type': 'application/json', // The server expects JSON
+      },
+      body: JSON.stringify(pngData_json), // Send the pngData_json in the request body as JSON
+  })
+    .then(response => response.json()) // Parse the JSON response from the server
+    .then(data => {
+      // TODO: Change this with what you want it to do later
+      console.log('Success:', data["svg_info"]);
     })
     .catch(error => {
       console.error('Error:', error);
