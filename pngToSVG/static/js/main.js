@@ -200,7 +200,10 @@ function insertSvg() {
   })
     .then(response => response.json()) // Parse the JSON response from the server
     .then(data => {
-      console.log('Success:', data);
+      const svgContainer = document.getElementById('svgContainer');
+      // overwrite
+      svgContainer.innerHTML = data["svg_info"];
+    //   console.log('Success:', data["svg_info"]);
     })
     .catch(error => {
       console.error('Error:', error);
