@@ -195,7 +195,6 @@ function computeViewBoxFromPath(pathData, padding = 2) {
 
 
 
-// Clean version of insertSvg()
 function insertSvg() {
   // PNG URL
   const storedImg = document.getElementById('preview-canvas');
@@ -215,6 +214,32 @@ function insertSvg() {
       // overwrite
       svgContainer.innerHTML = data["svg_info"];
     //   console.log('Success:', data["svg_info"]);
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
+}
+
+
+function upscalePNG() {
+  // PNG URL
+  const storedImg = document.getElementById('preview-canvas');
+  const pngData = storedImg.toDataURL('image/png');
+  const pngData_json = { pngData };
+
+  fetch('/pngUpscale', {
+      method: 'POST', // Use POST method
+      headers: {
+          'Content-Type': 'application/json', // The server expects JSON
+      },
+      body: JSON.stringify(pngData_json), // Send the pngData_json in the request body as JSON
+  })
+    .then(response => response.json()) // Parse the JSON response from the server
+    .then(data => {
+      // TODO: Change this with what you want it to do later
+      // console.log('Success:', data["svg_info"]);
+      const pngContainer = document.getElementById('divC1R2');
+      pngContainer.innerHTML = "<img src='../static/images/upscaled_image.png' />"
     })
     .catch(error => {
       console.error('Error:', error);
@@ -289,9 +314,33 @@ function drawImageOnCanvas(img) {
   canvas.style.height = "100%";
 
   insertSvg();
+  upscalePNG();
 }
 
+function computeViewBoxFromPath(pathData, padding = 2) {
+  const svgNS = "http://www.w3.org/2000/svg";
+  const tempSvg = document.createElementNS(svgNS, "svg");
+  // Hide the temporary element
+  tempSvg.style.position = "absolute";
+  tempSvg.style.left = "-9999px";
+  
+  const path = document.createElementNS(svgNS, "path");
+  path.setAttribute("d", pathData);
+  tempSvg.appendChild(path);
+  document.body.appendChild(tempSvg);
 
+  const bbox = path.getBBox();
+
+  document.body.removeChild(tempSvg);
+
+  // Expand the bounding box by 'padding' units on each side.
+  const minX = bbox.x - padding;
+  const minY = bbox.y - padding;
+  const width = bbox.width + padding * 2;
+  const height = bbox.height + padding * 2;
+  
+  return `${minX} ${minY} ${width} ${height}`;
+}
 
 /********* Zooming and Panning SVG *********/
 const divC2 = document.getElementById('divC2');
