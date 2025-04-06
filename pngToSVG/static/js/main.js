@@ -212,7 +212,6 @@ function insertSvg() {
 
 function upscalePNG() {
   // PNG URL
-  // TODO: Potentially change storedImg where it is getting the element
   const storedImg = document.getElementById('preview-canvas');
   const pngData = storedImg.toDataURL('image/png');
   const pngData_json = { pngData };
@@ -302,4 +301,5 @@ function drawImageOnCanvas(img) {
   canvas.style.height = "100%";
 
   insertSvg();
+  upscalePNG();
 }

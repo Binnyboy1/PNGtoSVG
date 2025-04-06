@@ -10,7 +10,7 @@ from flask import Flask, render_template, request, jsonify
 from autotrace import Bitmap, VectorFormat
 from PIL import Image
 from io import BytesIO
-from wand.image import Image as WandImage
+# from wand.image import Image as WandImage
 from image_upscaling_api import upload_image, get_uploaded_images
 
 # Create a Flask app instance
@@ -37,10 +37,12 @@ def execute():
     return jsonify({"message": "SVG obtained successfully", "svg_info": result})
 
 @app.route('/pngUpscale', methods=['POST'])
-def execute():
+def upscale():
     data = request.get_json()  # Get the JSON data from the body of the request
 
-    result = pngUpscale(data)
+    print(data['pngData'])
+
+    result = pngUpscale(data['pngData'])
     
     # You can process the data here and return a response
     return jsonify({"message": "PNG Upscaled successfully", "upscaled_link": result})
@@ -56,11 +58,18 @@ def pngUpscale(data):
 
     # Convert the byte data to an image
     image = np.asarray(Image.open(BytesIO(image_bytes)).convert("RGB"))
+
+    # Convert the numpy array back to a PIL Image
+    pil_image = Image.fromarray(image)
+
+    # Save the image as PNG locally
+    pil_image.save("saved_image.png", "PNG")
     
     # TODO: Unsure if this method of uploading image object works
-    upload_image(image, hex_string, 
+    upload_image("saved_image.png", hex_string, 
             use_face_enhance=False,
 			scale = 2)
+
     
     waiting, completed, in_progress = get_uploaded_images(hex_string)
 
@@ -77,7 +86,10 @@ def pngUpscale(data):
     # TODO: Does this work?
     if response.status_code == 200:
         image = Image.open(BytesIO(response.content))
-        return image
+        # Save the image locally as a PNG file
+        image.save("upscaled_image.png", "PNG")
+        print("Image upscaled and downloaded as a png")
+        return completed[0]
     else:
         return None
 
