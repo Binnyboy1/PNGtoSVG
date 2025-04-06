@@ -1,33 +1,9 @@
 function drawPath() {
   const pathData = document.getElementById('pathInput').value.trim();
-  const svg = document.getElementById('svgOutput');
-  
-  // If svgOutput was overwritten
-  if (svg == null) {
-    const svgParent = document.getElementById('svgContainer');
-    // Clear previous content(s)
-    svgParent.innerHTML = '';
-    var newSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    newSvg.setAttribute("viewBox", "0 0 400 400");
-    newSvg.id = 'svgOutput';
-
-    if (pathData) {
-      const path = createSvgPath(pathData); // Use our safe function
-      if (path) { // Only append if valid
-        newSvg.appendChild(path);
-      }
-    }
-    svgParent.append(newSvg)
-  } else {
-    // Clear previous path(s)
-    svg.innerHTML = '';
-
-    if (pathData) {
-      const path = createSvgPath(pathData); // Use our safe function
-      if (path) { // Only append if valid
-        svg.appendChild(path);
-      }
-    }
+  const svgParent = document.getElementById('svgContainer');
+  const path = createSvgPath(pathData); // Use our safe function
+  if (path) { // Only append if valid
+    svgParent.appendChild(path);
   }
 }
 
@@ -168,8 +144,18 @@ function createSvgPath(pathData) {
   path.setAttribute("stroke-width", "1");
   path.setAttribute("fill", "#e9ecef");
   path.setAttribute("fill-rule", "evenodd");
-  
-  return path;
+
+  // 4. Update bounding box
+  const viewBox = computeViewBoxFromPath(pathData);
+  const newSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  newSvg.id = "svgOutput";
+  newSvg.setAttribute("viewBox", viewBox);
+  const [x, y, w, h] = viewBox.split(" ");
+  newSvg.setAttribute("width", w);
+  newSvg.setAttribute("height", h);
+
+  newSvg.appendChild(path);
+  return newSvg;
 }
 
 const textarea = document.getElementById('pathInput');
@@ -179,6 +165,31 @@ textarea.addEventListener('input', () => {
     textarea.classList.remove('invalid');
   }
 });
+
+function computeViewBoxFromPath(pathData, padding = 2) {
+  const svgNS = "http://www.w3.org/2000/svg";
+  const tempSvg = document.createElementNS(svgNS, "svg");
+  // Hide the temporary element
+  tempSvg.style.position = "absolute";
+  tempSvg.style.left = "-9999px";
+  
+  const path = document.createElementNS(svgNS, "path");
+  path.setAttribute("d", pathData);
+  tempSvg.appendChild(path);
+  document.body.appendChild(tempSvg);
+
+  const bbox = path.getBBox();
+
+  document.body.removeChild(tempSvg);
+
+  // Expand the bounding box by 'padding' units on each side.
+  const minX = bbox.x - padding;
+  const minY = bbox.y - padding;
+  const width = bbox.width + padding * 2;
+  const height = bbox.height + padding * 2;
+  
+  return `${minX} ${minY} ${width} ${height}`;
+}
 
 
 
@@ -279,3 +290,141 @@ function drawImageOnCanvas(img) {
 
   insertSvg();
 }
+
+
+
+/********* Zooming and Panning SVG *********/
+const divC2 = document.getElementById('divC2');
+const svgContainer = document.getElementById('svgContainer');
+
+// Global transform state
+let scale = 1;
+let panX = 0;
+let panY = 0;
+
+// A helper to update the transform using a CSS matrix.
+// We do not use transformOrigin here.
+function updateTransform() {
+  svgContainer.style.transform = `matrix(${scale}, 0, 0, ${scale}, ${panX}, ${panY})`;
+}
+
+// Helper to get pointer coordinates relative to divC2.
+function getRelativePointer(e) {
+  const rect = divC2.getBoundingClientRect();
+  return {
+    x: e.clientX - rect.left,
+    y: e.clientY - rect.top,
+    width: rect.width,
+    height: rect.height,
+  };
+}
+
+// ----- Mouse Panning and Zooming ----- //
+let isDragging = false;
+let dragStart = { x: 0, y: 0 };
+let panStart = { x: 0, y: 0 };
+
+divC2.addEventListener('mousedown', (e) => {
+  isDragging = true;
+  const pointer = getRelativePointer(e);
+  dragStart = { x: pointer.x, y: pointer.y };
+  panStart = { x: panX, y: panY };
+});
+
+document.addEventListener('mousemove', (e) => {
+  if (!isDragging) return;
+  const pointer = getRelativePointer(e);
+  // Calculate change since drag start
+  panX = panStart.x + (pointer.x - dragStart.x);
+  panY = panStart.y + (pointer.y - dragStart.y);
+  updateTransform();
+});
+
+document.addEventListener('mouseup', () => {
+  isDragging = false;
+});
+
+// Zooming with mouse wheel, zooming relative to the pointer position.
+divC2.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const pointer = getRelativePointer(e);
+  // Calculate zoom factor (adjust sensitivity as needed)
+  const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
+  
+  // New scale
+  const newScale = scale * zoomFactor;
+  
+  panX = pointer.x - (pointer.x - panX) * zoomFactor;
+  panY = pointer.y - (pointer.y - panY) * zoomFactor;
+  
+  scale = newScale;
+  updateTransform();
+});
+
+// ----- Touch Panning and Pinch Zooming ----- //
+let touchMode = null; // "pan" or "pinch"
+let initialTouchDistance = 0;
+let initialScale = scale;
+let initialPan = { x: panX, y: panY };
+let pinchCenter = { x: 0, y: 0 };
+
+divC2.addEventListener('touchstart', (e) => {
+  const rect = divC2.getBoundingClientRect();
+  if (e.touches.length === 1) {
+    touchMode = 'pan';
+    const touch = e.touches[0];
+    const pointer = {
+      x: touch.clientX - rect.left,
+      y: touch.clientY - rect.top,
+    };
+    dragStart = { ...pointer };
+    initialPan = { x: panX, y: panY };
+  } else if (e.touches.length === 2) {
+    touchMode = 'pinch';
+    const touch1 = e.touches[0];
+    const touch2 = e.touches[1];
+    initialTouchDistance = Math.hypot(
+      touch2.clientX - touch1.clientX,
+      touch2.clientY - touch1.clientY
+    );
+    initialScale = scale;
+    initialPan = { x: panX, y: panY };
+    // Compute the midpoint of the two touches relative to divC2
+    pinchCenter.x = ((touch1.clientX + touch2.clientX) / 2) - rect.left;
+    pinchCenter.y = ((touch1.clientY + touch2.clientY) / 2) - rect.top;
+  }
+});
+
+divC2.addEventListener('touchmove', (e) => {
+  e.preventDefault();
+  const rect = divC2.getBoundingClientRect();
+  if (touchMode === 'pan' && e.touches.length === 1) {
+    const touch = e.touches[0];
+    const pointer = {
+      x: touch.clientX - rect.left,
+      y: touch.clientY - rect.top,
+    };
+    panX = initialPan.x + (pointer.x - dragStart.x);
+    panY = initialPan.y + (pointer.y - dragStart.y);
+    updateTransform();
+  } else if (touchMode === 'pinch' && e.touches.length === 2) {
+    const touch1 = e.touches[0];
+    const touch2 = e.touches[1];
+    const currentDistance = Math.hypot(
+      touch2.clientX - touch1.clientX,
+      touch2.clientY - touch1.clientY
+    );
+    const newScale = initialScale * (currentDistance / initialTouchDistance);
+    // Adjust pan to keep pinchCenter fixed
+    panX = pinchCenter.x - (pinchCenter.x - initialPan.x) * (newScale / initialScale);
+    panY = pinchCenter.y - (pinchCenter.y - initialPan.y) * (newScale / initialScale);
+    scale = newScale;
+    updateTransform();
+  }
+});
+
+divC2.addEventListener('touchend', (e) => {
+  if (e.touches.length === 0) {
+    touchMode = null;
+  }
+});
