@@ -1,0 +1,111 @@
+Metadata-Version: 2.1
+Name: pyautotrace
+Version: 0.0.4
+Summary: Python bindings for AutoTrace.
+Author: Lemonyte
+License: MIT License
+        
+        Copyright (c) 2022 Lemonyte
+        
+        Permission is hereby granted, free of charge, to any person obtaining a copy
+        of this software and associated documentation files (the "Software"), to deal
+        in the Software without restriction, including without limitation the rights
+        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        copies of the Software, and to permit persons to whom the Software is
+        furnished to do so, subject to the following conditions:
+        
+        The above copyright notice and this permission notice shall be included in all
+        copies or substantial portions of the Software.
+        
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+        SOFTWARE.
+        
+Project-URL: Repository, https://github.com/lemonyte/pyautotrace
+Keywords: autotrace,bitmap,graphics,tracing,vector
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Cython
+Classifier: Programming Language :: Python :: 3
+Classifier: Topic :: Multimedia :: Graphics :: Graphics Conversion
+Classifier: Topic :: Scientific/Engineering :: Image Processing
+Classifier: Typing :: Typed
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE.txt
+
+# PyAutoTrace
+
+Python bindings for [AutoTrace](https://github.com/autotrace/autotrace).
+
+## Requirements
+
+- [Python 3.8](https://www.python.org/downloads/) or higher
+
+## Installation
+
+```shell
+python -m pip install pyautotrace
+```
+
+## Usage
+
+```python
+import numpy as np
+from autotrace import Bitmap, VectorFormat
+from PIL import Image
+
+# Load an image.
+image = np.asarray(Image.open("image.jpeg").convert("RGB"))
+
+# Create a bitmap.
+bitmap = Bitmap(image)
+
+# Trace the bitmap.
+vector = bitmap.trace()
+
+# Save the vector as an SVG.
+vector.save("image.svg")
+
+# Get an SVG as a byte string.
+svg = vector.encode(VectorFormat.SVG)
+```
+
+## Building
+
+If you wish to build the package from source, clone the repository and follow the instructions for your platform below.
+
+### Linux and MacOS
+
+```shell
+sh ./scripts/build_unix.sh
+```
+
+A virtual environment will be created using your default Python installation.
+Compilation requires GLib, pkg-config, and unzip to be installed on your system, which most Linux distributions include by default.
+On MacOS you can install GLib with `brew install glib`.
+
+### Windows
+
+```shell
+.\scripts\build_windows.ps1
+```
+
+A virtual environment will be created using your default Python installation.
+In order to compile the generated C code, you will need to have
+[Visual C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) or another C/C++ compiler installed.
+
+## TODO
+
+- Tests
+- Documentation
+
+## License
+
+[MIT License](LICENSE.txt)

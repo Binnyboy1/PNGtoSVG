@@ -17,46 +17,55 @@ from image_upscaling_api import upload_image, get_uploaded_images
 # Create a Flask app instance
 app = Flask(__name__)
 
-# Routes
+# Route to open the main html page with / at the end of the localhost url
 @app.route('/')
 def main():
     return render_template('main.html')
 
+# Route to open the dragDrop html page with /dragDrop at the end of the localhost url
 @app.route('/dragDrop')
 def dragDrop():
     return render_template('dragDrop.html')
 
-@app.route('/pngToSvg', methods=['POST'])  # Change to POST method
+# API Endpoint for converting png to svg
+@app.route('/pngToSvg', methods=['POST']) 
 def execute():
-    data = request.get_json()  # Get the JSON data from the body of the request
+    # Get the JSON data from the body of the request
+    data = request.get_json()  
 
-    # print(data['pngData'])  # Print the data to see the received input
+    # print(data['pngData'])
 
+    # Call the pngToSvg() function below with the passed data['pngData'] as the parameter
     result = pngToSvg(data['pngData'])
     
-    # You can process the data here and return a response
     return jsonify({"message": "SVG obtained successfully", "svg_info": result})
 
+# API Endpoint for upscaling the image
 @app.route('/pngUpscale', methods=['POST'])
 def upscale():
-    data = request.get_json()  # Get the JSON data from the body of the request
+    # Get the JSON data from the body of the request
+    data = request.get_json()  
 
-    print(data['pngData'])
+    # print(data['pngData'])
 
+    # Call the pngUpscale() function below with the passed data['pngData'] as the parameter
     result = pngUpscale(data['pngData'])
     
-    # You can process the data here and return a response
     return jsonify({"message": "PNG Upscaled successfully", "upscaled_path": result})
 
 def pngUpscale(data):
-    # Save the image locally as a PNG file
+    # The resulting images will be saved in static/images/
     static_folder = os.path.join(app.root_path, 'static', 'images')
+
     # Ensure the directory exists
     os.makedirs(static_folder, exist_ok=True)
 
     # Generate a random 32-digit hexadecimal string
+    # This is used as a unique identifier of the image, as per the 
+    # image_upscaling_api documentation
     hex_string = ''.join(random.choices(string.hexdigits.lower(), k=32))
 
+    # This gets only the base64 part
     image_data = data.split(",")[1]
 
     # Decode the base64 string
@@ -69,48 +78,52 @@ def pngUpscale(data):
     pil_image = Image.fromarray(image)
 
     # Save the image as PNG locally
-    # pil_image.save("/static/images/saved_image.png", "PNG")
     # Define the full path to save the image
     image_path = os.path.join(static_folder, 'saved_image.png')
     # Save the image
     pil_image.save(image_path, 'PNG')
     
-    # TODO: Unsure if this method of uploading image object works
+    # Upload the image via image_upscaling_api
+    # Note that image_path is the local path to the saved png image
     upload_image(image_path, hex_string, 
             use_face_enhance=False,
 			scale = 2)
 
-    
+    # After upscaling, the image will be saved in the completed variable
     waiting, completed, in_progress = get_uploaded_images(hex_string)
 
-    # Wait until the image is completed
-    # TODO: Does waiting like this work?
+    # Wait until the image is upscaled
     while not completed:
-        # You may want to add a small delay to avoid hammering the server with requests
-        time.sleep(2)  # Sleep for 1 second before checking again
+        # Sleep for 2 seconds before checking again, this is adjustable
+        time.sleep(2)  
+        # Check for completion again
         waiting, completed, in_progress = get_uploaded_images(hex_string)
 
-    
+    # Make a request for the upscaled image stored in completed[0]
     response = requests.get(completed[0])
 
-    # TODO: Does this work?
     if response.status_code == 200:
+        # If it worked:
+
+        # Open the upscaled image and store it in the image variable
         image = Image.open(BytesIO(response.content))
         
-        # Define the full path to save the image
+        # Store the upscaled image in static/images/
         image_path = os.path.join(static_folder, 'upscaled_image.png')
-        # Save the image
         image.save(image_path, 'PNG')
-        # image.save("/static/images/upscaled_image.png", "PNG")
 
-        print("Image upscaled and downloaded as a png")
+        # print("Image upscaled and downloaded as a png")
         # return completed[0]
+
         return image_path
     else:
         return None
 
 def pngToSvg(data):
-    image_data = data.split(",")[1]  # This gets only the base64 part
+    # The data parameter passes the base64 url string
+
+    # This gets only the base64 part
+    image_data = data.split(",")[1]  
 
     # print(image_data)
 
@@ -120,10 +133,10 @@ def pngToSvg(data):
     # Convert the byte data to an image
     image = np.asarray(Image.open(BytesIO(image_bytes)).convert("RGB"))
 
-    # Convert the NumPy array back into a Pillow Image object
-    pil_image = Image.fromarray(image)
-
     # Testing the following:
+    # Convert the NumPy array back into a Pillow Image object
+#     pil_image = Image.fromarray(image)
+# 
 #     with WandImage.from_array(np.array(pil_image)) as wand_img:
 #         # Apply thresholding with a value of 0.5 (This is just an example threshold value)
 #         wand_img.threshold(0.5)  # This applies a threshold to create a high-contrast binary image
@@ -132,25 +145,25 @@ def pngToSvg(data):
 # 
 #         print("Thresholding applied and image saved as 'thresholded_output.png'.")
 
-#     # Create a bitmap.
-#     bitmap = Bitmap(image)
-# 
-#     # Trace the bitmap.
-#     vector = bitmap.trace()
-# 
-#     # vector.save("temp.svg")
-# 
-#     # Get an SVG as a byte string.
-#     svg = vector.encode(VectorFormat.SVG)
-# 
-#     # print(svg)
-# 
-#     # print(svg.decode('utf-8'))
-# 
-#     return svg.decode('utf-8')
+    # Create a bitmap.
+    bitmap = Bitmap(image)
+
+    # Trace the bitmap.
+    vector = bitmap.trace()
+
+    # vector.save("temp.svg")
+
+    # Get an SVG as a byte string.
+    svg = vector.encode(VectorFormat.SVG)
+
+    # print(svg)
+
+    # print(svg.decode('utf-8'))
+
+    return svg.decode('utf-8')
 
 # Run the app
 if __name__ == '__main__':
+    # Here you can toggle between debugging or not
     app.run(debug=True)
     # app.run(debug=False)
-

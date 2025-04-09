@@ -196,9 +196,11 @@ function computeViewBoxFromPath(pathData, padding = 2) {
 
 
 function insertSvg() {
-  // PNG URL
+  // Get the canvas object, store it as 'storedImg'
   const storedImg = document.getElementById('preview-canvas');
+  // Get url
   const pngData = storedImg.toDataURL('image/png');
+  // Convert this to a json object
   const pngData_json = { pngData };
 
   fetch('/pngToSvg', {
@@ -213,7 +215,6 @@ function insertSvg() {
       const svgContainer = document.getElementById('svgContainer');
       // overwrite
       svgContainer.innerHTML = data["svg_info"];
-    //   console.log('Success:', data["svg_info"]);
     })
     .catch(error => {
       console.error('Error:', error);
@@ -222,13 +223,16 @@ function insertSvg() {
 
 
 function upscalePNG() {
-  // PNG URL
+  // Get the canvas object, store it as 'storedImg'
   const storedImg = document.getElementById('preview-canvas');
+  // Get url
   const pngData = storedImg.toDataURL('image/png');
+  // Convert this to a json object
   const pngData_json = { pngData };
 
+  // Send a POST request to app.py
   fetch('/pngUpscale', {
-      method: 'POST', // Use POST method
+      method: 'POST',
       headers: {
           'Content-Type': 'application/json', // The server expects JSON
       },
@@ -236,9 +240,9 @@ function upscalePNG() {
   })
     .then(response => response.json()) // Parse the JSON response from the server
     .then(data => {
-      // TODO: Change this with what you want it to do later
-      // console.log('Success:', data["svg_info"]);
+      // Get the container we wish to modify
       const pngContainer = document.getElementById('divC1R2');
+      // Set the innerHTML to the upscaled image via this hardcoded local path
       pngContainer.innerHTML = "<img src='../static/images/upscaled_image.png' />"
     })
     .catch(error => {
